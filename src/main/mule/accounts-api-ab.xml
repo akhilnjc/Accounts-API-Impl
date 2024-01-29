@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0f7d0628-4bbe-460f-9904-630188c42950" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="9cead769-1fe4-4b35-a670-091b45c739d3" >
+		<http:request-connection host="diy-accounts-api.us-w2.cloudhub.io" port="80" />
+	</http:request-config>
+	<flow name="accounts-api-abFlow" doc:id="bc1a3fec-f916-4977-b80b-c6ce6a9d5689" >
+		<http:listener doc:name="GET/ getAccountDetailsByName" doc:id="64f4e075-c53d-4632-8e5e-0f856ca48e53" config-ref="HTTP_Listener_config" path="/accounts" allowedMethods="GET">
+			<http:response >
+				<http:headers ><![CDATA[#[{
+	result_size:sizeOf(payload),
+	account_name:vars.name,
+	userid:vars.userid
+	
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<set-variable value="#[attributes.queryParams.name]" doc:name="Set name" doc:id="e91282c5-76fe-45a5-9e3d-8a2579f6aa79" variableName="name"/>
+		<set-variable value="#[attributes.headers.user_id]" doc:name="Set UserID" doc:id="f79d694e-50bc-4785-924d-cd0d9a2a7a83" variableName="userid"/>
+		<http:request method="GET" doc:name="getAccountDetails" doc:id="dc90fa54-fbe0-4f7a-88f1-3e06b3f099dc" config-ref="HTTP_Request_configuration" path="/accounts">
+			<http:headers ><![CDATA[#[{
+	user_id:vars.userId,
+    client_id:"6d9e329147164bf08a2cc4eeb075252e",
+    client_secret:"B20a21B05dBb4287a7C49076D6E0d377"
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+ account_name:vars.name
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="1229ac2f-99f2-418a-becf-259dfd0a9318" />
+	</flow>
+</mule>
